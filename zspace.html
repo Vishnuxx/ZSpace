@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>three.js raycaster - texture</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
+    />
+    <style>
+      body {
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+      }
+
+      a {
+        color: #08f;
+      }
+
+      #container {
+        width: 500px;
+        height: 500px;
+        /* background-color: black; */
+      }
+      #canvas {
+        width: 100vw;
+        height: 100vh;
+
+        background-color: rgb(226, 242, 254);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <canvas id="canvas"></canvas>
+    </div>
+
+    <script type="module">
+      const div = document.querySelector("#container");
+
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+
+      const ratio = window.devicePixelRatio;
+      ctx.scale(ratio, ratio);
+
+      canvas.width = document.body.clientWidth;
+      canvas.height = document.body.clientHeight;
+
+      function Zspace(context) {
+        let nearclip = 1;
+        let farclip = 100;
+        let z = 0;
+        let level = 0;
+        const OFFSET = {
+          x:0,
+          y:0
+        }
+
+        let points = {
+          level1: {
+            0: [],
+            500: [],
+          },
+          level2: {
+            0: [],
+            500: [],
+          },
+        };
+
+        this.nearclip = nearclip;
+        this.currentLevel = () => level;
+
+        this.translate = (x , y) => {
+           OFFSET.x += x;
+           OFFSET.y += y;
+           this.redraw();
+        }
+
+        this.zoom = (val) => {
+          if (val > 0) {
+            if (z < farclip) {
+              z += val;
+            } else {
+              z = 1;
+            }
+          } else {
+            if (z > nearclip) {
+              z += val;
+            } else {
+              z = farclip;
+            }
+          }
+          this.redraw();
+        };
+
+        this.getScale = (z) => {};
+
+        this.redraw = () => {
+          // //z length of the visible region
+          // let len = farclip - nearclip;
+
+          // let phase = this.currentLevel();
+          // //let z = 100
+          // //loops from z to farclip of level1
+          // //i is the areas between z to farclip of level1
+          // for(let i = nearclip; i < len; i++) {
+          //     if(i > farclip) {
+          //         phase++;
+          //     }
+
+          //     //set scale of the drawing
+          //     const scale = farclip - i/farclip
+          //     //multiply this scale value to drawing in i th space
+          //}
+
+          const speed = 1;
+          context.clearRect(0, 0, canvas.width, canvas.height);
+          context.beginPath();
+          context.rect(OFFSET.x , OFFSET.y , 50 * z * speed, 50 * z * speed);
+          context.fill();
+          // console.log(z);
+        };
+      }
+
+      const space = new Zspace(ctx);
+      let leftMouseDown = false
+      let rightMouseDown = false
+
+      const Cursor = {
+        prevX: 0,
+        prevY:0,
+        x:0,
+        y:0
+      }
+     
+      document.oncontextmenu = function () {
+          return false;
+        };
+
+
+      div.addEventListener("wheel", (e) => {
+        space.zoom(-e.deltaY * 0.01);
+      } , false);
+      div.addEventListener("mousedown", (e) => {
+        switch(e.button) {
+          case 0: //left click
+            leftMouseDown = true;
+            rightMouseDown = false;
+            break;
+          case 2: //right click
+            leftMouseDown = false;
+            rightMouseDown = true;
+            break;
+        }
+        
+        Cursor.prevX = e.clientX
+        Cursor.prevY = e.clientY
+        Cursor.x = e.clientX
+        Cursor.y = e.clientY
+      } , false);
+      div.addEventListener("mousemove", (e) => {
+        Cursor.x = e.pageX
+        Cursor.y = e.pageY
+        Cursor.x = (Cursor.x - Cursor.prevX)/10
+        Cursor.y = (Cursor.y - Cursor.prevY)/10
+        if(leftMouseDown) {
+          
+        }
+        
+        if(rightMouseDown) {
+          space.translate(Cursor.x , Cursor.y)
+        }
+
+        Cursor.prevX = Cursor.x
+        Cursor.prevY = Cursor.y
+      } , false);
+      div.addEventListener("mouseup", (e) => {
+        leftMouseDown = false
+        rightMouseDown = false
+      } , false);
+    </script>
+  </body>
+</html>
